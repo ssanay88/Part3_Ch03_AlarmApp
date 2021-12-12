@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Part3_Ch03_AlarmApp</string>
+    <string name="changeTimeBtnText">시간 재설정</string>
+    <string name="onAlram">알람 켜기</string>
 </resources>

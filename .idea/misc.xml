@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/ppllo/AndroidStudioProjects/Part3_Ch03_AlarmApp/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.16203703703703703" />
         <entry key="..\:/Users/ppllo/AndroidStudioProjects/Part3_Ch03_AlarmApp/app/src/main/res/drawable/background_whitering.xml" value="0.290625" />
         <entry key="..\:/Users/ppllo/AndroidStudioProjects/Part3_Ch03_AlarmApp/app/src/main/res/layout/activity_main.xml" value="0.27447916666666666" />
       </map>

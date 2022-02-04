@@ -11,7 +11,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
 // Manifest파일에 등록 필요!!
-
+// PendingIntent가 실행되면 Notificataion 실행
 class AlarmReceiver: BroadcastReceiver() {
 
     companion object {
@@ -19,26 +19,27 @@ class AlarmReceiver: BroadcastReceiver() {
         const val NOTIFICATION_CHANNEL_ID = "1000"
     }
 
-    // 브로드캐스트리시버에서 인텐트가 수신될 경우 실행
+    // 브로드캐스트리시버에서 인텐트가 수신될 경우 실행하는 콜백 함수
     override fun onReceive(context: Context, intent: Intent) {
 
-        createNotificationChannel(context)
-        notifyNotification(context)
-
+        // Notification 실행
+        createNotificationChannel(context)    // Notification 채널 생성
+        notifyNotification(context)    // Notification 실행
 
     }
 
+    // SDK 26버전 이상일 경우 NotificationChannel이 필요
     private fun createNotificationChannel(context: Context) {
 
         // SDK 버전이 26이상일 경우
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChaneel = NotificationChannel(
+            val notificationChanel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
                 "기상 알람",
                 NotificationManager.IMPORTANCE_HIGH,
             )
 
-            NotificationManagerCompat.from(context).createNotificationChannel(notificationChaneel)
+            NotificationManagerCompat.from(context).createNotificationChannel(notificationChanel)
 
         }
     }

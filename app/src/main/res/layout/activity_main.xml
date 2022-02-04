@@ -7,6 +7,10 @@
     android:background="@color/background_black"
     tools:context=".MainActivity">
 
+    <!-- 배경 원을 그린 View , background를 만들어줘서 지정 -->
+    <!-- DimensionRatio : 뷰의 가로세로 비율을 조절, 가로/세로 순 , H,W : 비율로 결정할 주체
+      여기서는 폭을 제약에 맞춘후 그 폭을 기준으로 높이를 결정 -->
+    <!-- View를 먼저 생성한 후 TextView를 생성하여 View위에 나타나게 한다.   -->
     <View
         android:layout_width="0dp"
         android:layout_height="0dp"

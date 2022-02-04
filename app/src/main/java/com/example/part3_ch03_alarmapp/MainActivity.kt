@@ -12,7 +12,7 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var mainBinding: ActivityMainBinding
+    lateinit var mainBinding: ActivityMainBinding    // 뷰바인딩
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -21,11 +21,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(mainBinding.root)
 
         // step0 뷰를 초기화해주기
-        initOnOffBtn()
+        initOnOffBtn()    // 알람 켜기 끄기 버튼 설정
         initChangeAlarmTimeBtn()
 
         // step1 데이터 가져오기
-        // 앱을 시작할때 sharedPreferences에 데이터의 존재 유무와 알람의 onoff를 확인하여 불일치에 대한 예외처리를 한 뒤 AlarmDisplayModel로 반환
+        // 앱을 시작할때 sharedPreferences에 등록된 알람이 있는지와 알람의 onoff를 확인하여 불일치에 대한 예외처리를 한 뒤 AlarmDisplayModel로 반환
         val model = fetchDataFromSharedPreferences()
         renderView(model)    // 해당 데이터를 View에 적용
 
@@ -41,9 +41,10 @@ class MainActivity : AppCompatActivity() {
             // on / off 에 따라 작업을 처리한다.
             // 오프 -> 알람 제거 , 온 -> 알람 등록
             // 데이터를 저장
+            // tag에 저장되어있던 모델을 가져온다.
             val model = it.tag as? AlarmDisplayModel ?: return@setOnClickListener
-            val newModel = saveAlarmModel(model.hour , model.minute, model.onOff.not())
-            renderView(newModel)
+            val newModel = saveAlarmModel(model.hour , model.minute, model.onOff.not())  // 불러온 모델을 onOff를 반대로 저장
+            renderView(newModel)    // 뷰를 다시 rendering
 
             if (newModel.onOff) {
                 // 새로운 모델이 켜진 경우 -> 알람을 등록
@@ -57,12 +58,15 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                val intent = Intent(this,AlarmReceiver::class.java)
+                val intent = Intent(this,AlarmReceiver::class.java)    // BroadcastReceiver를 불러올 인텐트
+                // 선언한 인테트를 불러올 Pending Intent
                 val pendingIntent = PendingIntent.getBroadcast(this, ALARM_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-                // 정시에 실행하고 반복하는 명력
+                // 정시에 실행하고 반복하는 명령
                 // Inexcat -> 정확하지 않다 , 즉 정확하진 않지만 반복적으로 알람이 제공되는 명령
                 // 해당 메소드는 OS가 잠자기 모드에 들어가도 실행되지않고 정확하지 않기 때문에 현 예제에서 참고용으로만 쓰인다.
+                // alarmManager.setAndAllowWhileIdle()  *잠자기 모드에서도 정확한 alarmManager 조건을 탐지하는 메소드
+                // alarmManager.setExactAndAllowWhileIdle()
                 alarmManager.setInexactRepeating(
                     AlarmManager.RTC_WAKEUP,
                     calendar.timeInMillis,
@@ -94,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             // 기존 알람을 삭제 -> 모두 타임피커에서 시간을 선택하여 설정
             TimePickerDialog(this, {picker , hour , minute ->
 
-                val model = saveAlarmModel(hour,minute,false)
+                val model = saveAlarmModel(hour,minute,false)    // 선택한 시간으로 새로운 model 생성
                 renderView(model)    // 뷰를 업데이트
                 cancelAlarm()    // 기존 알람을 삭제
 
@@ -105,7 +109,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    // 입력한 알람 시간을 sharedPreferences를 이용하여 저장해주는 함수
+    // 입력한 알람 시간을 sharedPreferences를 이용하여 저장하고 선택한 시간에 대한 model을 반환
     private fun saveAlarmModel(
         hour: Int,
         minute: Int,
@@ -116,21 +120,23 @@ class MainActivity : AppCompatActivity() {
             minute = minute,
             onOff = onOff)
 
-        val sharedPreferences = getSharedPreferences("time", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("time", Context.MODE_PRIVATE)    // SharedPreference에 추가
         // with 범위 함수?
         with(sharedPreferences.edit()) {
-            putString("alarm", model.makeDataForDB())
+            // SharedPreferences에 데이터 삽입 , Key값과 Value값
+            putString("alarm", model.makeDataForDB())    // makeDataForDB : Data Class안에서 선언한 함수
             putBoolean("onOff", model.onOff)
             commit()
         }
 
-        return model
+        return model    // 생성된 Data도 반환
 
     }
 
     // 저장된 데이터를 가져와서 가공하는 함수
     private fun fetchDataFromSharedPreferences():AlarmDisplayModel {
 
+        // 저장해둔 값이 있는 경우 가져온다.
         val sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME,Context.MODE_PRIVATE)
 
         // getString에서 null이 반환가능하기 때문에 null일 경우 기본값인 9:30으로 반환하다록 해준다.
@@ -147,6 +153,8 @@ class MainActivity : AppCompatActivity() {
         )
 
         // 보정 예외 처리 : 알람이 등록된건지 확인해서 처리
+        // SharedPreference와 앱에서 실행되고 있는 데이터간 차이가 있을 경우 보정
+        // AlarmReceiver에서 알람데이터가 설정되어 있는지 확인한다.
         val pendingIntent = PendingIntent.getBroadcast(
             this,
             ALARM_REQUEST_CODE ,
@@ -154,13 +162,13 @@ class MainActivity : AppCompatActivity() {
             PendingIntent.FLAG_NO_CREATE    // 펜딩인텐트가 있을 경우만 가져오고 없으면 안받는다.
             )
 
-        // 알람은 꺼져있지만, 데이터는 켜져있는 경우
+        // 알람이 등록이 안되어있는데 알람은 켜저있을 경우 : 알람을 꺼준다 , 등록된 데이터가 없기 때문
         if ((pendingIntent == null) and alarmModel.onOff) {
             alarmModel.onOff = false
         }
-        // 알람은 켜져있지만, 데이터는 꺼져있는 경우
+        // 알람은 등록이 되어있지만 앱에서 알람은 꺼져있는 경우
         else if ((pendingIntent != null) and alarmModel.onOff.not()) {
-            pendingIntent.cancel()
+            pendingIntent.cancel()    // 등록된 알람을 취소해준다.
         }
 
         return alarmModel
@@ -173,7 +181,7 @@ class MainActivity : AppCompatActivity() {
         mainBinding.timeTextView.text = model.timeText
         mainBinding.onOffBtn.text = model.onOffText
         // tag?
-        mainBinding.onOffBtn.tag = model
+        mainBinding.onOffBtn.tag = model    // 버튼안에다가 tag를 통해 model값들을 저장하여 불러올수있다
 
     }
 
@@ -192,7 +200,7 @@ class MainActivity : AppCompatActivity() {
 
     // 상수를 지정해주기 위해
     companion object {
-        private const val SHARED_PREFERENCES_NAME = "time"
+        private const val SHARED_PREFERENCES_NAME = "time"    // SharedPreference 이름
         private const val ALARM_KEY = "alarm"
         private const val ONOFF_KEY = "onOff"
 

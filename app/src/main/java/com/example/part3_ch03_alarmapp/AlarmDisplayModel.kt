@@ -2,7 +2,7 @@ package com.example.part3_ch03_alarmapp
 
 
 // data class는 생성자 부분에 인자들을 넣는다.
-
+// 설정한 알람 데이터를 담을 Data 모델
 data class AlarmDisplayModel(
     val hour: Int,
     val minute: Int,
@@ -11,7 +11,7 @@ data class AlarmDisplayModel(
     val timeText:String
         // getter함수
         get() {
-        val h = "%02d".format(if ( hour < 12 ) hour else hour - 12) // 12
+        val h = "%02d".format(if ( hour < 12 ) hour else hour - 12) // %02d : 2자리로 표현, 한자리일 경우 0 추가, 정수형
         val m = "%02d".format(minute)
 
         return "$h:$m"
